@@ -1,83 +1,85 @@
 import allure
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver import Keys
+from page_object.base_page import BasePage
+from page_object.locators import OrderPageLocators
 
 
-class OrderPage:
-    inputs = [By.XPATH, "//input[contains(@class, 'Input_Responsible__1jDKN')]"]
-    metro_station_input = [By.CLASS_NAME, 'select-search__input']
-    metro_station_row = [By.CLASS_NAME, 'select-search__row']
-    next_button = [By.XPATH, "//button[contains(text(), 'Далее')]"]
-    inputs_second_page = [By.XPATH, "//input[contains(@class, 'Input_Responsible__1jDKN')]"]
-    date_picker_selected = [By.XPATH, "//div[contains(@class, 'react-datepicker__day--selected')]"]
-    dropdown_control = [By.CLASS_NAME, 'Dropdown-control']
-    dropdown_option = [By.CLASS_NAME, 'Dropdown-option']
-    black_checkbox = [By.ID, 'black']
-    grey_checkbox = [By.ID, 'grey']
-    order_button = [By.XPATH, "//button[contains(text(), 'Заказать') and contains(@class, 'Button_Middle__1CSJM')]"]
-    yes_button = [By.XPATH, "//button[contains(text(), 'Да') and contains(@class, 'Button_Middle__1CSJM')]"]
-    order_has_been_placed = [By.CLASS_NAME, "Order_ModalHeader__3FDaJ"]
+class OrderPage(BasePage):
+    @allure.step("Ввод Имени")
+    def set_name(self, name):
+        self.send_key(OrderPageLocators.field_name, name)
 
-    def __init__(self, driver):
-        self.driver = driver
+    @allure.step("Ввод Фамилим")
+    def set_last_name(self, last_name):
+        self.send_key(OrderPageLocators.field_last_name, last_name)
 
-    @allure.step('Ввести имя')
-    def set_name(self):
-        self.driver.find_elements(*self.inputs)[0].send_keys('Анна')
+    @allure.step("Ввод адреса")
+    def set_address(self, address):
+        self.send_key(OrderPageLocators.field_address, address)
 
-    @allure.step('Ввести фамилию')
-    def set_surname(self):
-        self.driver.find_elements(*self.inputs)[1].send_keys('Иванова')
+    @allure.step("Ввод номера телефона")
+    def set_phone_number(self, phone_number):
+        self.send_key(OrderPageLocators.field_phone_number, phone_number)
 
-    @allure.step('Ввести адрес')
-    def set_address(self):
-        self.driver.find_elements(*self.inputs)[2].send_keys('Москва, Алтуфьевское шоссе, 135')
+    @allure.step("Выбор остановки метро")
+    def set_metro_station(self, station):
+        self.find_element(OrderPageLocators.field_subway_station).click()
+        self.send_key(OrderPageLocators.field_subway_station, station)
+        self.send_key(OrderPageLocators.field_subway_station, Keys.ARROW_DOWN + Keys.ENTER)
 
-    @allure.step('Выбрать станцию метро')
-    def set_metro_station(self):
-        self.driver.find_element(*self.metro_station_input).send_keys('Отрадное')
-        self.driver.find_element(*self.metro_station_row).click()
+    @allure.step("Клик на кнопку продолжить")
+    def click_next(self):
+        self.find_element(OrderPageLocators.button_next).click()
 
-    @allure.step('Ввести номер телефона')
-    def set_phone_number(self):
-        self.driver.find_elements(*self.inputs)[3].send_keys('+79035269377')
+    @allure.step("Заполнение формы 'Для кого самокат'")
+    def filling_order_data(self, name, last_name, address_to_take, station, phone_number):
+        self.wait_element(OrderPageLocators.field_name[1])
+        self.wait_element(OrderPageLocators.field_last_name[1])
+        self.wait_element(OrderPageLocators.field_address[1])
+        self.wait_element(OrderPageLocators.field_subway_station[1])
+        self.wait_element(OrderPageLocators.field_phone_number[1])
+        self.set_name(name)
+        self.set_last_name(last_name)
+        self.set_address(address_to_take)
+        self.set_metro_station(station)
+        self.set_phone_number(phone_number)
 
-    @allure.step('Нажать Далее')
-    def click_next_button(self):
-        self.driver.find_element(*self.next_button).click()
 
-    @allure.step('Выбор даты')
-    def set_date(self):
-        self.driver.find_elements(*self.inputs_second_page)[0].send_keys('01.08.2023')
-        self.driver.find_element(*self.date_picker_selected).click()
+class RentPageFillingData(BasePage):
+    @allure.step("Ввод даты доставки")
+    def set_when_to_bring(self, date):
+        self.send_key(OrderPageLocators.field_when_to_bring, date)
 
-    @allure.step('Выбрать срок аренды: трое суток')
-    def set_rent_period(self):
-        self.driver.find_element(*self.dropdown_control).click()
-        self.driver.find_elements(*self.dropdown_option)[2].click()
+    @allure.step("Выбор срока аренды")
+    def set_rental_period(self, index):
+        self.find_element(OrderPageLocators.field_rental_period).click()
+        self.find_elements(OrderPageLocators.rental_period_menu)[index].click()
 
-    @allure.step('Выбрать черный цвет')
-    def click_black_color(self):
-        self.driver.find_element(*self.black_checkbox).click()
+    @allure.step("Выбор цвета самоката")
+    def set_scooter_color(self, color_index):
+        self.find_elements(OrderPageLocators.field_scooter_color)[color_index].click()
 
-    @allure.step('выбрать серый цвет')
-    def click_grey_color(self):
-        self.driver.find_element(*self.grey_checkbox).click()
+    @allure.step("Заполнение комментария для курьера")
+    def set_comment_for_the_courier(self, message):
+        self.send_key(OrderPageLocators.field_comment, message)
 
-    @allure.step('Ввод комментария')
-    def set_comment(self):
-        self.driver.find_elements(*self.inputs_second_page)[1].send_keys('Комментарии')
+    @allure.step("Заполнение формы Про аренду")
+    def filling_about_rent_date(self, date, index, color, message):
+        self.wait_element(OrderPageLocators.field_comment[1])
+        self.set_when_to_bring(date)
+        self.set_rental_period(index)
+        self.set_scooter_color(color)
+        self.set_comment_for_the_courier(message)
 
-    @allure.step('Кликнуть Заказать')
-    def click_order_button(self):
-        self.driver.find_element(*self.order_button).click()
+    @allure.step("Клик на  кнопку 'Заказать'")
+    def click_on_button_to_order(self):
+        self.find_element(OrderPageLocators.button_to_order).click()
 
-    @allure.step('кликнуть Да')
-    def click_yes_button(self):
-        self.driver.find_element(*self.yes_button).click()
+    @allure.step("Клик на кнопку 'Да'")
+    def click_yes_on_modal_menu(self):
+        self.find_elements(OrderPageLocators.yes_or_no_buttons)[1].click()
 
-    @allure.step("текст Заказ оформлен")
-    def order_is_processed_text(self):
-        return WebDriverWait(self.driver, 5).until(ec.visibility_of_element_located(self.order_has_been_placed)).text
-
+    @allure.step("Получение информации об оформленном заказе")
+    def completed_order(self):
+        text = self.find_element(OrderPageLocators.info_about_order).text
+        return text

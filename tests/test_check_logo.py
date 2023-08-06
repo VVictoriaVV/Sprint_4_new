@@ -1,33 +1,19 @@
-from selenium import webdriver
-from pages.main_page import MainPageScooter
-from pages.order_page import OrderPage
-
+import allure
+from page_object.main_page import MainPage
 
 class TestCheckLogo:
-    driver = None
+    @allure.title("Проверка навигации с помощью кнопки логотипа 'Самоката'")
+    def test_click_on_logo_scooter(self, driver):
+        driver.get("https://qa-scooter.praktikum-services.ru/order")
+        main_page = MainPage(driver)
+        main_page.click_on_logo_scooter()
+        main_page.checking_tabs()
 
-    def test_check_yandex_logo_to_main_page(self, driver):
-        main_page = MainPageScooter(driver)
-        main_page.click_yandex_logo()
-        driver.switch_to.window(driver.window_handles[1])
-        main_page.wait_for_load_enter_button()
-        assert main_page.current_url() == 'https://dzen.ru/?yredirect=true'
+        assert driver.current_url == "https://qa-scooter.praktikum-services.ru/", 'Навигация на главную страницу «Самоката».'
 
-    def test_check_yandex_logo_to_order_page(self, driver):
-        main_page = MainPageScooter(driver)
-        main_page.click_header_order_button()
-        order_page = OrderPage(driver)
-        order_page.wait_for_load_header_for_whom_scooter()
-        main_page.click_yandex_logo()
-        driver.switch_to.window(driver.window_handles[1])
-        main_page.wait_for_load_enter_button()
-        assert main_page.current_url() == 'https://dzen.ru/?yredirect=true'
-
-    def test_check_scooter_logo_to_order_page(self, driver):
-        main_page = MainPageScooter(driver)
-        order_page = OrderPage(driver)
-        main_page.click_header_order_button()
-        order_page.wait_for_load_header_for_whom_scooter()
-        main_page.click_scooter_logo()
-        main_page.wait_for_scooter_img()
-        assert 'Привезём его прямо к вашей двери' in main_page.header_main().text, "Переход на главную страницу не осуществлен"
+    @allure.title("Проверка навигации с помощью кнопки логотипа 'Яндекса'")
+    def test_click_on_logo_yandex(self, driver):
+        main_page = MainPage(driver)
+        main_page.click_on_logo_yandex()
+        main_page.checking_tabs()
+        assert driver.current_url == "https://dzen.ru/?yredirect=true", 'В новом окне должна открыться главная страница Яндекса(Дзен).'
